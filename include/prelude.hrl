@@ -149,14 +149,14 @@
 
 -ifdef(S2_USE_LAGER_AND_ERROR_LOGGER).
 
--define(error(Format),           lager:error(Format, []), error_logger:error_msg(Format)).
--define(error(Format, Args),     lager:error(Format, Args), error_logger:error_msg(Format, Args)).
--define(critical(Format),        lager:critical(Format, []), error_logger:error_msg(Format)).
--define(critical(Format, Args),  lager:critical(Format, Args), error_logger:error_msg(Format, Args)).
--define(alert(Format),           lager:alert(Format, []), error_logger:error_msg(Format)).
--define(alert(Format, Args),     lager:alert(Format, Args), error_logger:error_msg(Format, Args)).
--define(emergency(Format),       lager:emergency(Format, []), error_logger:error_msg(Format)).
--define(emergency(Format, Args), lager:emergency(Format, Args), error_logger:error_msg(Format, Args)).
+-define(error(Format),           begin lager:error(Format, []), error_logger:error_msg(Format) end).
+-define(error(Format, Args),     begin lager:error(Format, Args), error_logger:error_msg(Format, Args) end).
+-define(critical(Format),        begin lager:critical(Format, []), error_logger:error_msg(Format) end).
+-define(critical(Format, Args),  begin lager:critical(Format, Args), error_logger:error_msg(Format, Args) end).
+-define(alert(Format),           begin lager:alert(Format, []), error_logger:error_msg(Format) end).
+-define(alert(Format, Args),     begin lager:alert(Format, Args), error_logger:error_msg(Format, Args) end).
+-define(emergency(Format),       begin lager:emergency(Format, []), error_logger:error_msg(Format) end).
+-define(emergency(Format, Args), begin lager:emergency(Format, Args), error_logger:error_msg(Format, Args) end).
 
 -else. %default
 
