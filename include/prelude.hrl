@@ -260,6 +260,8 @@
 
 -ifdef(S2_USE_KIVRA_METRICS).
 
+-define(do_increment_count(__Name, __Count),
+        (kivra_metrics:increase_counter([?APP | __Name], __Count))).
 -define(do_increment(__Name),
         (kivra_metrics:increase_counter([?APP | __Name]))).
 -define(do_increment(__Fun, __Ret),
@@ -414,6 +416,7 @@
 
 -endif.
 
+-define(increment_count(Name, N), ?do_increment_count(Name, N)).
 -define(increment(Name),       ?do_increment(Name)).
 -define(increment(Fun, Ret),   ?do_increment(Fun, Ret)).
 -define(time(Name, Expr),      ?do_time(Name, Expr)).
