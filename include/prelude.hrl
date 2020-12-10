@@ -131,11 +131,11 @@
 -define(info(Format, Args),      lager:info(Format, Args)).
 -define(notice(Format),          lager:notice(Format, [])).
 -define(notice(Format, Args),    lager:notice(Format, Args)).
--define(warning(Format),         lager:warning(Format, [])).
--define(warning(Format, Args),   lager:warning(Format, Args)).
 
 -ifdef(S2_USE_LAGER_BUT_NOT_FOR_ERRORS).
 
+-define(warning(Format),         error_logger:warning_msg(Format, [])).
+-define(warning(Format, Args),   error_logger:warning_msg(Format, Args)).
 -define(error(Format),           error_logger:error_msg(Format)).
 -define(error(Format, Args),     error_logger:error_msg(Format, Args)).
 -define(critical(Format),        error_logger:error_msg(Format)).
@@ -147,6 +147,8 @@
 
 -else. %default
 
+-define(warning(Format),         lager:warning(Format, [])).
+-define(warning(Format, Args),   lager:warning(Format, Args)).
 -define(error(Format),           lager:error(Format, [])).
 -define(error(Format, Args),     lager:error(Format, Args)).
 -define(critical(Format),        lager:critical(Format, [])).
@@ -232,6 +234,24 @@
                                          | Extras
                                          ]}])).
 -define(failed(Rsn),         ?failed(Rsn, [])).
+
+%% Structured warning
+%%
+%% * Good to have when sending warnings to Sentry
+%% * In Sentry, logs will be grouped on Format and Args. Log data that differs
+%%   but would still belong to the same Sentry issue should be in Extras.
+%% * The other part of this hack is in raven_error_logger.erl
+-define( warn(Format, Args, Extras)
+       , ?warning( "Warning: ~p~n" ++ Format
+                 , [ {extras, [ {function, ?FUNCTION_BIN}
+                              , {line,     ?LINE}
+                              | Extras
+                              ]}
+                   | Args]
+                 )
+       ).
+-define(warn(Format, Args), ?warn(Format, Args, [])).
+-define(warn(Format), ?warn(Format, [], [])).
 
 -define( exception(Class, Reason, Stacktrace, Extras)
        , ?error( "Exception: ~p\n"
