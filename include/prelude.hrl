@@ -8,6 +8,9 @@
 -define(__PRELUDE_HRL, true).
 
 -include_lib("stdlib/include/assert.hrl").
+-ifdef(S2_USE_OTP_LOGGER).
+-include_lib("kernel/include/logger.hrl").
+-endif.
 
 %%%_* Assertions =======================================================
 -define(hence(A), ?assert(A)).
@@ -124,7 +127,34 @@
 -define(is_thunk(X), is_function(X, 0)).
 
 %%%_* Logging ==========================================================
--ifdef(S2_USE_LAGER).
+-ifdef(S2_USE_OTP_LOGGER).
+
+-define(debug(StringOrReport),                 ?LOG_DEBUG(StringOrReport)).
+-define(debug(StringOrReport, ArgsOrMeta),     ?LOG_DEBUG(StringOrReport, ArgsOrMeta)).
+-define(debug(FunOrFormat, Args, Meta),        ?LOG_DEBUG(FunOrFormat, Args, Meta)).
+-define(info(StringOrReport),                  ?LOG_INFO(StringOrReport)).
+-define(info(StringOrReport, ArgsOrMeta),      ?LOG_INFO(StringOrReport, ArgsOrMeta)).
+-define(info(FunOrFormat, Args, Meta),         ?LOG_INFO(FunOrFormat, Args, Meta)).
+-define(notice(StringOrReport),                ?LOG_NOTICE(StringOrReport)).
+-define(notice(StringOrReport, ArgsOrMeta),    ?LOG_NOTICE(StringOrReport, ArgsOrMeta)).
+-define(notice(FunOrFormat, Args, Meta),       ?LOG_NOTICE(FunOrFormat, Args, Meta)).
+-define(warning(StringOrReport),               ?LOG_WARNING(StringOrReport)).
+-define(warning(StringOrReport, ArgsOrMeta),   ?LOG_WARNING(StringOrReport, ArgsOrMeta)).
+-define(warning(FunOrFormat, Args, Meta),      ?LOG_WARNING(FunOrFormat, Args, Meta)).
+-define(error(StringOrReport),                 ?LOG_ERROR(StringOrReport)).
+-define(error(StringOrReport, ArgsOrMeta),     ?LOG_ERROR(StringOrReport, ArgsOrMeta)).
+-define(error(FunOrFormat, Args, Meta),        ?LOG_ERROR(FunOrFormat, Args, Meta)).
+-define(critical(StringOrReport),              ?LOG_CRITICAL(StringOrReport)).
+-define(critical(StringOrReport, ArgsOrMeta),  ?LOG_CRITICAL(StringOrReport, ArgsOrMeta)).
+-define(critical(FunOrFormat, Args, Meta),     ?LOG_CRITICAL(FunOrFormat, Args, Meta)).
+-define(alert(StringOrReport),                 ?LOG_ALERT(StringOrReport)).
+-define(alert(StringOrReport, ArgsOrMeta),     ?LOG_ALERT(StringOrReport, ArgsOrMeta)).
+-define(alert(FunOrFormat, Args, Meta),        ?LOG_ALERT(FunOrFormat, Args, Meta)).
+-define(emergency(StringOrReport),             ?LOG_EMERGENCY(StringOrReport)).
+-define(emergency(StringOrReport, ArgsOrMeta), ?LOG_EMERGENCY(StringOrReport, ArgsOrMeta)).
+-define(emergency(FunOrFormat, Args, Meta),    ?LOG_EMERGENCY(FunOrFormat, Args, Meta)).
+
+-elif(S2_USE_LAGER).
 
 -compile([{parse_transform, lager_transform}]).
 
