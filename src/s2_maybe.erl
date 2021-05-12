@@ -11,9 +11,11 @@
         , fmap/2
         , lift/1
         , lift/2
+        , liftm/2
         , map/2
         , reduce/2
         , reduce/3
+        , sequence/1
         , to_bool/1
         , unlift/1
         , unlift/2
@@ -108,6 +110,20 @@ lift_unlift_test() ->
   42             = unlift(fun(X) -> {ok, X} end, 42).
 -endif.
 
+-spec liftm(fun(), [maybe(_, B)] | [thunk(maybe(_, B))]) -> maybe(_, B).
+%% @doc lift a function F into the Maybe monad.
+liftm(F, Maybes) when is_list(Maybes) and is_function(F, length(Maybes)) ->
+  ?fmap(fun(Args) -> apply(F, Args) end, sequence(Maybes)).
+
+-ifdef(TEST).
+liftm_test() ->
+  Add3      = fun(A, B, C) -> A + B + C end,
+  ValsOK    = [{ok, 1}, {ok, 2},         {ok, 3}], 
+  ValsError = [{ok, 1}, {error, reason}, {ok, 3}],
+  ?assertEqual({ok, 6},         liftm(Add3, ValsOK)),
+  ?assertEqual({error, reason}, liftm(Add3, ValsError)),
+  ?assertEqual({ok, 6},         ?liftm(Add3, {ok, 1}, {ok, 2}, {ok, 3})).
+-endif.
 
 -spec map(fun(), [_]) -> maybe(_, _).
 %%@doc map(F, Xs) is the result of mapping F over Xs inside the maybe
@@ -137,6 +153,33 @@ reduce_test() ->
   {error, _} = reduce(fun(X, Y) -> X + Y       end, [0, foo]).
 -endif.
 
+-spec sequence(collection(maybe(A, B)) | collection(thunk(maybe(A, B)))) -> maybe(collection(A), B).
+%% @doc sequence(Maybes) evaluates each maybe in a collectiom of maybes and
+%% collects the results inside the maybe monad. Supports lazy evaluation of
+%% thunks.
+sequence([F | Maybes]) when ?is_thunk(F) ->
+  sequence([F() | Maybes]);
+sequence([{ok, Val} | Maybes]) ->
+  ?fmap(fun(Vals) -> [Val | Vals] end, sequence(Maybes));
+sequence([{error, Reason} | _Maybes]) ->
+  {error, Reason};
+sequence([]) ->
+  ?lift([]);
+sequence(Map) when is_map(Map) ->
+  {Keys, Vals} = lists:unzip(maps:to_list(Map)),
+  ?fmap(fun(Sequenced) -> maps:from_list(lists:zip(Keys, Sequenced)) end,
+        sequence(Vals)).
+
+-ifdef(TEST).
+sequence_test() ->
+  ?assertEqual({ok, [1, 2, 3]}, sequence([{ok, 1}, {ok, 2}, {ok, 3}])),
+  ?assertEqual({error, foo},    sequence([{ok, 1}, {error, foo}, {error, bar}])),
+  ?assertEqual({ok, []},        sequence([])),
+  ?assertEqual({error, foo},    sequence([?thunk({ok, 1}), ?thunk({error, foo})])),
+  ?assertEqual({ok, #{a => 1, b => 2}}, sequence(#{a => {ok, 1}, b => {ok, 2}})),
+  ?assertEqual({error, foo},            sequence(#{a => {ok, 1}, b => {error, foo}})),
+  ?assertEqual({error, foo},            sequence(#{a => {ok, 1}, b => ?thunk({error, foo})})).
+-endif.
 
 -spec to_bool(maybe(_, _)) -> boolean().
 %% @doc to_bool(X) is the boolean representation of the maybe-value X.
